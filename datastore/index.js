@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const async = require('async');
 const _ = require('underscore');
 const counter = require('./counter');
 
@@ -19,6 +20,22 @@ const writeFile = (id, text) => {
   });
 };
 
+const getFiles = (callback) => {
+  const files = fs.readdirSync(`${dataDir}`, (err, files) => {
+    return files;
+  });
+  const todos = [];
+  files.forEach(file => {
+    const todo = fs.readFileSync(`${dataDir}/${file}`, (err, data) => {
+      if (err) { throw err; }
+      todo.name = fileName;
+      todo.text = data.toString();
+    });
+    todos.push({id: file.substring(0, file.length - 4), text: todo.toString()});
+  });
+  callback(todos);
+};
+
 exports.create = (text, callback) => {
   counter.getNextUniqueId((id) => {
     items[id] = text;
@@ -26,14 +43,15 @@ exports.create = (text, callback) => {
     writeFile(id, text);
     callback(null, { id, text });
   });
-
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  getFiles((todos) => {
+    var data = _.map(todos, ({id, text}, index) => {
+      return { id, text };
+    });
+    callback(null, data);
   });
-  callback(null, data);
 };
 
 exports.readOne = (id, callback) => {

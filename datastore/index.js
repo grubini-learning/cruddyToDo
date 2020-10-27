@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const async = require('async');
 const _ = require('underscore');
 const counter = require('./counter');
 
@@ -10,6 +9,7 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 const writeFile = (id, text) => {
+  console.log('writeFile ', id);
   fs.writeFile(`${dataDir}/${id}.txt`, text, (err) => {
     if (err) {
       console.log(err);
@@ -17,6 +17,11 @@ const writeFile = (id, text) => {
     } else {
       return true;
     }
+  });
+};
+const readFile = (id, callback) => {
+  fs.readFile(`${dataDir}/${id}.txt`, (err, data) => {
+    callback(data.toString());
   });
 };
 
@@ -55,33 +60,36 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  readFile(id, (text) => {
+    if (!text) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      callback(null, { id, text });
+    }
+  });
 };
 
-exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+exports.update = (id, msg, callback) => {
+  readFile(id, (text) => {
+    console.log(id, text);
+    if (!text) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      // text[id] = msg;
+      writeFile(id, msg);
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+  fs.unlink(`${dataDir}/${id}.txt`, (err) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      console.log(`${dataDir}/${id} was deleted`);
+      callback();
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////

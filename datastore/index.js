@@ -3,16 +3,30 @@ const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 
+const dataDir = path.join(__dirname, 'data');
 var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
+const writeFile = (id, text) => {
+  fs.writeFile(`${dataDir}/${id}.txt`, text, (err) => {
+    if (err) {
+      console.log(err);
+      return false;
+    } else {
+      return true;
+    }
+  });
+};
+
 exports.create = (text, callback) => {
   counter.getNextUniqueId((id) => {
-    console.log(id);
     items[id] = text;
+    //SAVE
+    writeFile(id, text);
     callback(null, { id, text });
   });
+
 };
 
 exports.readAll = (callback) => {
@@ -54,8 +68,8 @@ exports.delete = (id, callback) => {
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
 
-exports.dataDir = path.join(__dirname, 'data');
 
+module.exports.dataDir = dataDir;
 exports.initialize = () => {
   if (!fs.existsSync(exports.dataDir)) {
     fs.mkdirSync(exports.dataDir);

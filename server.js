@@ -53,7 +53,9 @@ app.get('/todo/:id', (req, res) => {
 
 // Update (crUd) -- member route
 app.put('/todo/:id', (req, res) => {
+  // console.log(req);
   Todo.update(req.params.id, req.body.todoText, (err, todo) => {
+    // console.log('todo ', todo);
     if (todo) {
       res.status(200).json(todo);
     } else {

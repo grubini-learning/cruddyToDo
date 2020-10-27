@@ -19,6 +19,7 @@ $(() => {
   };
 
   var changeTodo = (id, todo) => {
+    console.log(id, todo);
     $(`#todos [data-id=${id}]`).replaceWith(renderTodo(todo));
   };
 
